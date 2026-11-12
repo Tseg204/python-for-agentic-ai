@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 1: Print and Variables</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7; --card: #ffffff; --line: #e4e2db;
+  --text: #16150f; --text-2: #55534c; --muted: #85837a;
+  --accent: #2a78d6; --accent-soft: #e6f0fb;
+  --code-bg: #f3f1ec; --term-bg: #1d1d1b; --term-text: #e9e7df; --term-green: #7bd88f;
+  --good: #1f7a3d; --good-soft: #e5f4ea; --warn: #9a5b00; --warn-soft: #fdf1dc;
+  --str: #b0461e; --num: #6250d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #171716; --card: #21211f; --line: #363633;
+    --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+    --accent: #5a9cf0; --accent-soft: #1d2c40;
+    --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df; --term-green: #7bd88f;
+    --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+    --str: #f0936b; --num: #a99cf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171716; --card: #21211f; --line: #363633;
+  --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+  --accent: #5a9cf0; --accent-soft: #1d2c40;
+  --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df; --term-green: #7bd88f;
+  --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+  --str: #f0936b; --num: #a99cf5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 34px; line-height: 1.2; margin: 6px 0 8px; }
+h2 { font-size: 22px; margin: 0 0 8px; }
+.lead { color: var(--text-2); font-size: 19px; margin: 0; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-top: 20px; }
+.step { display: inline-block; background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  font-size: 13px; padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 12px 0; }
+pre code { background: none; padding: 0; }
+.s { color: var(--str); } .n { color: var(--num); } .c { color: var(--muted); } .f { color: var(--accent); }
+.term { background: var(--term-bg); color: var(--term-text); border-radius: 10px; padding: 14px 16px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; overflow-x: auto; }
+.term .p { color: var(--term-green); }
+.term .o { color: #bdbab0; }
+.note { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.note b { color: var(--warn); }
+.tip { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+
+/* agent loop diagram */
+.loop { display: block; margin: 12px auto 0; max-width: 520px; width: 100%; height: auto; }
+.loop .box { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+.loop .lbl { fill: var(--text); font-size: 15px; font-weight: 600; }
+.loop .sm { fill: var(--text-2); font-size: 12px; }
+.loop .arr { stroke: var(--muted); stroke-width: 2; fill: none; }
+.loop .head { fill: var(--muted); }
+.loop .mid { fill: var(--accent); font-size: 13px; font-weight: 600; }
+
+/* stepper */
+.stepper { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+@media (max-width: 620px) { .stepper { grid-template-columns: 1fr; } }
+.codelines { background: var(--code-bg); border-radius: 10px; padding: 10px 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; }
+.codelines div { padding: 3px 14px; border-left: 3px solid transparent; white-space: pre; overflow-x: auto; }
+.codelines div.now { background: var(--accent-soft); border-left-color: var(--accent); }
+.codelines div.done { opacity: .55; }
+.boxes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; }
+.vbox { border: 2px solid var(--accent); border-radius: 10px; min-width: 120px; overflow: hidden;
+  transition: transform .25s; background: var(--card); }
+.vbox.pop { transform: scale(1.08); }
+.vbox .tag { background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; padding: 2px 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.vbox .val { padding: 8px 10px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+.screen { margin-top: 10px; }
+.screen .term { min-height: 60px; }
+.empty-hint { color: var(--muted); font-size: 14px; }
+.btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { font: inherit; font-size: 15px; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:disabled { opacity: .5; cursor: default; }
+
+/* text vs number */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 520px) { .vs { grid-template-columns: 1fr; } }
+.vs > div { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.vs h3 { margin: 0 0 4px; font-size: 16px; }
+
+/* predict */
+.q { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.q .choices { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.q .choices button { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; }
+.q .choices button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.q .choices button.wrong { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.q .why { display: none; margin-top: 10px; color: var(--text-2); }
+.q.answered .why { display: block; }
+
+ul.mistakes { padding-left: 20px; margin: 8px 0 0; }
+ul.mistakes li { margin-bottom: 8px; }
+.next { text-align: center; color: var(--text-2); margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Session 1 of 20 · Python for Agentic AI</div>
+  <h1>Your first lines of Python</h1>
+  <p class="lead">Today you'll run a Python file, make it print things, and store an agent's settings in variables.</p>
+
+  <section>
+    <span class="step">Why this matters</span>
+    <h2>Every AI agent is a loop written in Python</h2>
+    <p>An AI agent is a program that works on a task step by step. It thinks, does something, checks the result, and repeats until it's done. The "thinking" part is an AI model. Everything around it, the loop, the memory, the tools, is plain Python. That's what you're learning.</p>
+    <svg class="loop" viewBox="0 0 520 240" role="img" aria-label="Agent loop: think, act, check, repeat">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+      <rect class="box" x="190" y="10" width="140" height="56" rx="12"/>
+      <text class="lbl" x="260" y="36" text-anchor="middle">Think</text>
+      <text class="sm" x="260" y="54" text-anchor="middle">ask the AI model</text>
+      <rect class="box" x="360" y="150" width="140" height="56" rx="12"/>
+      <text class="lbl" x="430" y="176" text-anchor="middle">Act</text>
+      <text class="sm" x="430" y="194" text-anchor="middle">run a tool</text>
+      <rect class="box" x="20" y="150" width="140" height="56" rx="12"/>
+      <text class="lbl" x="90" y="176" text-anchor="middle">Check</text>
+      <text class="sm" x="90" y="194" text-anchor="middle">done yet?</text>
+      <path class="arr" d="M332,50 Q420,70 428,146" marker-end="url(#ah)"/>
+      <path class="arr" d="M356,184 L166,184" marker-end="url(#ah)"/>
+      <path class="arr" d="M92,146 Q100,70 186,50" marker-end="url(#ah)"/>
+      <text class="mid" x="260" y="128" text-anchor="middle">all of this is Python</text>
+    </svg>
+  </section>
+
+  <section>
+    <span class="step">Step 1</span>
+    <h2>Running a file</h2>
+    <p>Python code lives in files that end in <code>.py</code>. You run one by typing <code>python3</code> and the file name. Python reads the file <b>from top to bottom</b>, one line at a time.</p>
+<pre><code><span class="c"># hello.py</span>
+<span class="f">print</span>(<span class="s">"Hello, agent!"</span>)
+<span class="f">print</span>(<span class="s">"Ready to work."</span>)</code></pre>
+    <div class="term"><span class="p">$</span> python3 hello.py<br><span class="o">Hello, agent!<br>Ready to work.</span></div>
+    <div class="tip">Lines starting with <code>#</code> are <b>comments</b>. Python skips them. They're notes for humans.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 2</span>
+    <h2><code>print</code> shows things on screen</h2>
+    <p><code>print(...)</code> displays whatever you put in the brackets. Text goes inside quotes. You can print several things at once by separating them with commas. Python puts a space between them.</p>
+<pre><code><span class="f">print</span>(<span class="s">"Steps left:"</span>, <span class="n">3</span>)</code></pre>
+    <div class="term"><span class="o">Steps left: 3</span></div>
+    <p>For an agent, <code>print</code> is how you watch what it's doing. You'll use it constantly to debug (find and fix problems).</p>
+  </section>
+
+  <section>
+    <span class="step">Step 3</span>
+    <h2>Variables are labeled boxes</h2>
+    <p>A variable is a name that holds a value. You make one with <code>=</code>. Think of it as putting something in a box and writing a label on it. Later you use the label to get the value back.</p>
+    <p>Click <b>Run next line</b> and watch the boxes fill up.</p>
+    <div class="btns">
+      <button class="primary" id="next">Run next line</button>
+      <button id="reset">Start over</button>
+    </div>
+    <div class="stepper">
+      <div class="codelines" id="lines"></div>
+      <div>
+        <div class="boxes" id="boxes"><span class="empty-hint">No variables yet.</span></div>
+        <div class="screen"><div class="term" id="screen"><span class="o" style="opacity:.6">screen output shows here</span></div></div>
+      </div>
+    </div>
+    <div class="note"><b>Watch line 6.</b> <code>steps_used = steps_used + 1</code> looks odd, but read it right to left: "take what's in <code>steps_used</code>, add 1, put the result back in the box." Agents do this every loop to count their steps.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 4</span>
+    <h2>Text vs numbers</h2>
+    <p>Quotes matter. They tell Python "this is text". Without quotes, <code>5</code> is a number you can do math with.</p>
+    <div class="vs">
+      <div><h3>Text (called a "string")</h3><pre><code>max_steps = <span class="s">"5"</span></code></pre>Just the character 5. Can't do math with it.</div>
+      <div><h3>Number (called an "int")</h3><pre><code>max_steps = <span class="n">5</span></code></pre>A real number. <code>max_steps + 1</code> gives <code>6</code>.</div>
+    </div>
+    <div class="tip">Variable names: use lowercase and underscores, like <code>agent_name</code>. No spaces, and don't start with a number.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 5</span>
+    <h2>Predict the output</h2>
+    <p>Guess first, then click. Wrong guesses are fine, that's how this sticks.</p>
+    <div id="quiz"></div>
+  </section>
+
+  <section>
+    <span class="step">Watch out</span>
+    <h2>Common beginner mistakes</h2>
+    <ul class="mistakes">
+      <li><b>Missing quote:</b> <code>print("hello)</code> crashes. Every opening quote needs a closing one.</li>
+      <li><b>Using a variable before making it:</b> Python reads top to bottom, so <code>print(task)</code> on line 1 fails if <code>task = ...</code> is on line 2.</li>
+      <li><b>Capital letters:</b> <code>Agent_name</code> and <code>agent_name</code> are two different names.</li>
+      <li><b>Quotes around a variable:</b> <code>print("agent_name")</code> prints the word agent_name, not what's inside the box.</li>
+    </ul>
+  </section>
+
+  <p class="next">Next: open <code>lessons/session-01/exercise.py</code> and set up your first agent's settings.</p>
+</main>
+
+<script>
+// ---- Variable stepper ----
+const program = [
+  { code: 'agent_name = "Scout"', set: ['agent_name', '"Scout"'] },
+  { code: 'max_steps = 5', set: ['max_steps', '5'] },
+  { code: 'print("Agent", agent_name, "ready")', out: 'Agent Scout ready' },
+  { code: 'steps_used = 0', set: ['steps_used', '0'] },
+  { code: 'print("Used:", steps_used)', out: 'Used: 0' },
+  { code: 'steps_used = steps_used + 1', set: ['steps_used', '1'] },
+  { code: 'print("Used:", steps_used, "of", max_steps)', out: 'Used: 1 of 5' },
+];
+let pos = 0;
+const linesEl = document.getElementById('lines');
+const boxesEl = document.getElementById('boxes');
+const screenEl = document.getElementById('screen');
+const nextBtn = document.getElementById('next');
+
+function render() {
+  linesEl.innerHTML = '';
+  program.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.textContent = (i + 1) + '  ' + p.code;
+    if (i < pos) d.className = 'done';
+    if (i === pos) d.className = 'now';
+    linesEl.appendChild(d);
+  });
+  nextBtn.disabled = pos >= program.length;
+  nextBtn.textContent = pos >= program.length ? 'Finished' : 'Run next line';
+}
+function setBox(name, val) {
+  const hint = boxesEl.querySelector('.empty-hint');
+  if (hint) hint.remove();
+  let box = boxesEl.querySelector(`[data-name="${name}"]`);
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'vbox'; box.dataset.name = name;
+    box.innerHTML = `<div class="tag"></div><div class="val"></div>`;
+    box.querySelector('.tag').textContent = name;
+    boxesEl.appendChild(box);
+  }
+  box.querySelector('.val').textContent = val;
+  box.classList.add('pop'); setTimeout(() => box.classList.remove('pop'), 250);
+}
+function addOutput(text) {
+  if (screenEl.dataset.used !== '1') { screenEl.innerHTML = ''; screenEl.dataset.used = '1'; }
+  const line = document.createElement('div'); line.className = 'o'; line.textContent = text;
+  screenEl.appendChild(line);
+}
+nextBtn.onclick = () => {
+  const p = program[pos];
+  if (!p) return;
+  if (p.set) setBox(p.set[0], p.set[1]);
+  if (p.out) addOutput(p.out);
+  pos++; render();
+};
+document.getElementById('reset').onclick = () => {
+  pos = 0;
+  boxesEl.innerHTML = '<span class="empty-hint">No variables yet.</span>';
+  screenEl.innerHTML = '<span class="o" style="opacity:.6">screen output shows here</span>';
+  screenEl.dataset.used = '';
+  render();
+};
+render();
+
+// ---- Predict the output ----
+const questions = [
+  { code: 'task = "Book a table"\nprint(task)', choices: ['task', 'Book a table', '"Book a table"'], right: 1,
+    why: 'No quotes around task in print, so Python looks inside the box and prints its value. The quotes themselves are not printed.' },
+  { code: 'print("task")', choices: ['task', 'Book a table', 'an error'], right: 0,
+    why: 'With quotes, "task" is just text, so Python prints the word itself.' },
+  { code: 'steps = 2\nsteps = steps + 1\nprint("Steps:", steps)', choices: ['Steps: 2', 'Steps: 3', 'Steps:3'], right: 1,
+    why: 'steps starts at 2, then gets 1 added, so it holds 3. The comma in print adds a space.' },
+  { code: 'agent = "Scout"\nagent = "Ranger"\nprint(agent)', choices: ['Scout', 'Ranger', 'Scout Ranger'], right: 1,
+    why: 'A box holds one value at a time. The second line replaces "Scout" with "Ranger".' },
+];
+const quizEl = document.getElementById('quiz');
+questions.forEach((q, qi) => {
+  const wrap = document.createElement('div'); wrap.className = 'q';
+  const pre = document.createElement('pre'); const code = document.createElement('code');
+  code.textContent = q.code; pre.appendChild(code);
+  const label = document.createElement('div'); label.textContent = `${qi + 1}. What does this print?`;
+  const choices = document.createElement('div'); choices.className = 'choices';
+  const why = document.createElement('div'); why.className = 'why'; why.textContent = q.why;
+  q.choices.forEach((c, ci) => {
+    const b = document.createElement('button'); b.textContent = c;
+    b.onclick = () => {
+      if (wrap.classList.contains('answered')) return;
+      wrap.classList.add('answered');
+      b.classList.add(ci === q.right ? 'right' : 'wrong');
+      b.textContent = (ci === q.right ? '✓ ' : '✗ ') + c;
+      if (ci !== q.right) {
+        const r = choices.children[q.right]; r.classList.add('right'); r.textContent = '✓ ' + q.choices[q.right];
+      }
+    };
+    choices.appendChild(b);
+  });
+  wrap.append(label, pre, choices, why);
+  quizEl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
