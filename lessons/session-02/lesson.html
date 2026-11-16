@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 2: Strings and f-strings</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7; --card: #ffffff; --line: #e4e2db;
+  --text: #16150f; --text-2: #55534c; --muted: #85837a;
+  --accent: #2a78d6; --accent-soft: #e6f0fb;
+  --code-bg: #f3f1ec; --term-bg: #1d1d1b; --term-text: #e9e7df; --term-green: #7bd88f;
+  --good: #1f7a3d; --good-soft: #e5f4ea; --warn: #9a5b00; --warn-soft: #fdf1dc;
+  --bad: #b3261e; --bad-soft: #fbe7e5;
+  --str: #b0461e; --num: #6250d6; --slot: #8a4fd0; --slot-soft: #f1e8fb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #171716; --card: #21211f; --line: #363633;
+    --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+    --accent: #5a9cf0; --accent-soft: #1d2c40;
+    --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df; --term-green: #7bd88f;
+    --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+    --bad: #f28b82; --bad-soft: #3d1f1d;
+    --str: #f0936b; --num: #a99cf5; --slot: #c9a2f5; --slot-soft: #2f2440;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171716; --card: #21211f; --line: #363633;
+  --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+  --accent: #5a9cf0; --accent-soft: #1d2c40;
+  --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df; --term-green: #7bd88f;
+  --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+  --bad: #f28b82; --bad-soft: #3d1f1d;
+  --str: #f0936b; --num: #a99cf5; --slot: #c9a2f5; --slot-soft: #2f2440;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 34px; line-height: 1.2; margin: 6px 0 8px; }
+h2 { font-size: 22px; margin: 0 0 8px; }
+.lead { color: var(--text-2); font-size: 19px; margin: 0; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-top: 20px; }
+.step { display: inline-block; background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  font-size: 13px; padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+code, pre, input.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 12px 0; }
+pre code { background: none; padding: 0; }
+.s { color: var(--str); } .n { color: var(--num); } .c { color: var(--muted); } .f { color: var(--accent); }
+.slot { color: var(--slot); font-weight: 700; }
+.term { background: var(--term-bg); color: var(--term-text); border-radius: 10px; padding: 14px 16px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; overflow-x: auto; white-space: pre-wrap; }
+.term .o { color: #bdbab0; }
+.term .err { color: #f28b82; }
+.note { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.note b { color: var(--warn); }
+.tip { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+
+/* pieces -> prompt diagram */
+.flow { display: block; margin: 12px auto 0; max-width: 640px; width: 100%; height: auto; }
+.flow .piece { fill: var(--slot-soft); stroke: var(--slot); stroke-width: 1.5; }
+.flow .box { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+.flow .ai { fill: var(--accent); }
+.flow .t { fill: var(--text); font-size: 13px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.flow .lbl { fill: var(--text); font-size: 15px; font-weight: 600; }
+.flow .sm { fill: var(--text-2); font-size: 12px; }
+.flow .w { fill: #fff; font-size: 15px; font-weight: 600; }
+.flow .arr { stroke: var(--muted); stroke-width: 2; fill: none; }
+.flow .head { fill: var(--muted); }
+
+/* string as beads */
+.beads { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0 4px; }
+.bead { width: 34px; text-align: center; border: 1.5px solid var(--accent); border-radius: 6px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; padding: 4px 0; background: var(--accent-soft); }
+.bead.sp { border-style: dashed; color: var(--muted); }
+
+/* lab */
+.lab input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); }
+.btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { font: inherit; font-size: 15px; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); }
+button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+button code { background: none; padding: 0; color: inherit; }
+.labout { margin-top: 12px; }
+
+/* f-string builder */
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 560px) { .fields { grid-template-columns: 1fr; } }
+.fields label { font-size: 14px; color: var(--text-2); display: block; }
+.fields input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); margin-top: 4px; }
+.filled { background: var(--slot-soft); color: var(--slot); border-radius: 4px; padding: 0 3px; font-weight: 600; }
+.toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 15px; }
+
+/* vs */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 560px) { .vs { grid-template-columns: 1fr; } }
+.vs > div { border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+.vs h3 { margin: 0 0 4px; font-size: 16px; }
+.vs .bad h3 { color: var(--bad); } .vs .good h3 { color: var(--good); }
+
+/* predict */
+.q { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.q .choices { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.q .choices button { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; }
+.q .choices button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.q .choices button.wrong { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.q .why { display: none; margin-top: 10px; color: var(--text-2); }
+.q.answered .why { display: block; }
+
+ul.mistakes { padding-left: 20px; margin: 8px 0 0; }
+ul.mistakes li { margin-bottom: 8px; }
+.next { text-align: center; color: var(--text-2); margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Session 2 of 20 · Python for Agentic AI</div>
+  <h1>Strings and f-strings</h1>
+  <p class="lead">Today you'll work with text in Python and build an AI prompt out of pieces.</p>
+
+  <section>
+    <span class="step">Why this matters</span>
+    <h2>A prompt is just a string you build</h2>
+    <p>When an agent talks to an AI model, it sends text. That text is almost never typed out by hand. The agent glues it together from pieces: who the user is, what they asked, what step it's on. Today's skill is that glue.</p>
+    <svg class="flow" viewBox="0 0 640 210" role="img" aria-label="Pieces of text flow into an f-string, which makes a prompt sent to the AI">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+      <rect class="piece" x="10" y="20" width="150" height="40" rx="8"/><text class="t" x="85" y="45" text-anchor="middle">user_name</text>
+      <rect class="piece" x="10" y="85" width="150" height="40" rx="8"/><text class="t" x="85" y="110" text-anchor="middle">task</text>
+      <rect class="piece" x="10" y="150" width="150" height="40" rx="8"/><text class="t" x="85" y="175" text-anchor="middle">step</text>
+      <path class="arr" d="M162,40 Q200,40 222,95" marker-end="url(#ah)"/>
+      <path class="arr" d="M162,105 L220,105" marker-end="url(#ah)"/>
+      <path class="arr" d="M162,170 Q200,170 222,117" marker-end="url(#ah)"/>
+      <rect class="box" x="228" y="70" width="190" height="70" rx="12"/>
+      <text class="lbl" x="323" y="100" text-anchor="middle">f-string</text>
+      <text class="sm" x="323" y="120" text-anchor="middle">glues the pieces together</text>
+      <path class="arr" d="M420,105 L478,105" marker-end="url(#ah)"/>
+      <rect class="ai" x="484" y="70" width="146" height="70" rx="12"/>
+      <text class="w" x="557" y="100" text-anchor="middle">AI model</text>
+      <text class="w" x="557" y="120" text-anchor="middle" style="font-size:12px;font-weight:400">reads the prompt</text>
+    </svg>
+  </section>
+
+  <section>
+    <span class="step">Step 1</span>
+    <h2>A string is a row of characters</h2>
+    <p>Text in Python is called a <b>string</b>, like a string of beads. Each bead is one character: a letter, a digit, a space, a symbol. You make one with quotes. Single <code>'hi'</code> or double <code>"hi"</code> both work. Just match them.</p>
+    <div class="beads" id="beads"></div>
+    <p style="color:var(--text-2);font-size:15px;margin:4px 0 0">That's <code>"Hi agent"</code>. 8 beads. The dashed one is the space, and it counts.</p>
+    <p>You can glue strings together with <code>+</code>. Python glues them exactly as they are, so you add spaces yourself.</p>
+<pre><code>user_name = <span class="s">"Sam"</span>
+<span class="f">print</span>(<span class="s">"Hi"</span> + user_name)     <span class="c"># HiSam   (no space!)</span>
+<span class="f">print</span>(<span class="s">"Hi "</span> + user_name)    <span class="c"># Hi Sam</span></code></pre>
+    <div class="tip">Text with an apostrophe? Use double quotes outside: <code>"Don't stop"</code>. With single quotes, Python thinks the string ends at the apostrophe.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 2</span>
+    <h2>String tools</h2>
+    <p>Strings come with built-in tools called <b>methods</b>. You use one by adding a dot and its name: <code>text.upper()</code>. They give you back a <i>new</i> string. The original stays the same.</p>
+    <p>Users type messy stuff. Agents clean it up before using it. Try it: type something (spaces at the ends are fine), then click a tool.</p>
+    <div class="lab">
+      <input class="mono" id="labin" value="   Book a TABLE for two   " spellcheck="false">
+      <div class="btns" id="labbtns"></div>
+      <div class="labout"><pre><code id="labcode"></code></pre><div class="term" id="labres"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="step">Step 3</span>
+    <h2>f-strings: fill in the blanks</h2>
+    <p>Gluing with <code>+</code> gets messy fast. An <b>f-string</b> is a string with an <code>f</code> right before the opening quote. Inside it, anything in curly brackets <code>{ }</code> gets swapped for that variable's value. It's a fill-in-the-blanks template.</p>
+    <p>Change the boxes and watch the prompt rebuild itself.</p>
+    <div class="fields">
+      <label>user_name <input class="mono" id="fname" value="Sam" spellcheck="false"></label>
+      <label>task <input class="mono" id="ftask" value="plan a trip to Lisbon" spellcheck="false"></label>
+    </div>
+<pre><code>prompt = <span id="fprefix" class="f">f</span><span class="s">"Help </span><span class="slot">{user_name}</span><span class="s"> with this task: </span><span class="slot">{task}</span><span class="s">"</span>
+<span class="f">print</span>(prompt)</code></pre>
+    <div class="term" id="fout"></div>
+    <label class="toggle"><input type="checkbox" id="nof"> Forget the <code>f</code> (a really common mistake)</label>
+  </section>
+
+  <section>
+    <span class="step">Step 4</span>
+    <h2>Mixing text and numbers</h2>
+    <p>Agents count steps, so you'll often put a number into text. With <code>+</code>, Python refuses to glue a string to a number. f-strings handle it for you.</p>
+    <div class="vs">
+      <div class="bad"><h3>With +</h3><pre><code>step = <span class="n">2</span>
+<span class="s">"Step "</span> + step</code></pre><div class="term"><span class="err">TypeError: can only concatenate
+str (not "int") to str</span></div></div>
+      <div class="good"><h3>With an f-string</h3><pre><code>step = <span class="n">2</span>
+<span class="f">f</span><span class="s">"Step </span><span class="slot">{step}</span><span class="s">"</span></code></pre><div class="term"><span class="o">'Step 2'</span></div></div>
+    </div>
+    <p style="margin-bottom:0">"Concatenate" just means glue together. If you ever do need <code>+</code>, turn the number into text first with <code>str(step)</code>.</p>
+  </section>
+
+  <section>
+    <span class="step">Step 5</span>
+    <h2>Predict the output</h2>
+    <p>Guess first, then click.</p>
+    <div id="quiz"></div>
+  </section>
+
+  <section>
+    <span class="step">Watch out</span>
+    <h2>Common beginner mistakes</h2>
+    <ul class="mistakes">
+      <li><b>Forgetting the <code>f</code>:</b> <code>"Hi {name}"</code> prints the curly brackets as they are.</li>
+      <li><b>Missing spaces with <code>+</code>:</b> <code>"Hi" + name</code> gives <code>HiSam</code>.</li>
+      <li><b>Forgetting the brackets on a method:</b> <code>text.upper</code> without <code>()</code> doesn't run the tool.</li>
+      <li><b>Expecting a method to change the original:</b> <code>text.strip()</code> gives you a new string. Save it: <code>clean = text.strip()</code>.</li>
+    </ul>
+  </section>
+
+  <p class="next">Next: open <code>lessons/session-02/exercise.py</code> and build your agent's first prompt.</p>
+</main>
+
+<script>
+// ---- beads ----
+const beadsEl = document.getElementById('beads');
+for (const ch of 'Hi agent') {
+  const b = document.createElement('div');
+  b.className = 'bead' + (ch === ' ' ? ' sp' : '');
+  b.textContent = ch === ' ' ? '␣' : ch;
+  beadsEl.appendChild(b);
+}
+
+// ---- string lab ----
+const tools = [
+  { name: 'strip()', run: s => s.trim(), say: 'cuts spaces off both ends' },
+  { name: 'lower()', run: s => s.toLowerCase(), say: 'all small letters' },
+  { name: 'upper()', run: s => s.toUpperCase(), say: 'ALL CAPITALS' },
+  { name: 'strip().lower()', run: s => s.trim().toLowerCase(), say: 'two tools in a row: clean, then small letters' },
+  { name: 'len()', run: s => s.length, say: 'counts the characters (spaces too)', fn: true },
+];
+const labIn = document.getElementById('labin');
+const labBtns = document.getElementById('labbtns');
+const labCode = document.getElementById('labcode');
+const labRes = document.getElementById('labres');
+let current = 0;
+function pyRepr(s) { return "'" + s.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'"; }
+function runLab() {
+  const t = tools[current];
+  const s = labIn.value;
+  labCode.textContent = t.fn ? `len(text)    # ${t.say}` : `text.${t.name}    # ${t.say}`;
+  const r = t.run(s);
+  labRes.textContent = typeof r === 'number' ? String(r) : pyRepr(r);
+  [...labBtns.children].forEach((b, i) => b.classList.toggle('on', i === current));
+}
+tools.forEach((t, i) => {
+  const b = document.createElement('button');
+  b.innerHTML = '<code></code>';
+  b.firstChild.textContent = t.fn ? 'len(text)' : '.' + t.name;
+  b.onclick = () => { current = i; runLab(); };
+  labBtns.appendChild(b);
+});
+labIn.addEventListener('input', runLab);
+runLab();
+
+// ---- f-string builder ----
+const fname = document.getElementById('fname');
+const ftask = document.getElementById('ftask');
+const fout = document.getElementById('fout');
+const nof = document.getElementById('nof');
+const fprefix = document.getElementById('fprefix');
+function esc(s) { const d = document.createElement('span'); d.textContent = s; return d.innerHTML; }
+function buildF() {
+  fprefix.style.display = nof.checked ? 'none' : '';
+  if (nof.checked) {
+    fout.innerHTML = '<span class="o">Help {user_name} with this task: {task}</span>';
+  } else {
+    fout.innerHTML = '<span class="o">Help </span><span class="filled">' + esc(fname.value) +
+      '</span><span class="o"> with this task: </span><span class="filled">' + esc(ftask.value) + '</span>';
+  }
+}
+[fname, ftask, nof].forEach(el => el.addEventListener('input', buildF));
+buildF();
+
+// ---- predict the output ----
+const questions = [
+  { code: 'name = "Sam"\nprint("Hi" + name)', choices: ['Hi Sam', 'HiSam', 'Hi name'], right: 1,
+    why: '+ glues exactly what you give it. There is no space in "Hi", so none appears.' },
+  { code: 'name = "Sam"\nprint("Hi {name}")', choices: ['Hi Sam', 'Hi {name}', 'an error'], right: 1,
+    why: 'No f before the quote, so the curly brackets are just normal characters.' },
+  { code: 'step = 3\nprint(f"Step {step} of 5")', choices: ['Step 3 of 5', 'Step {step} of 5', 'an error'], right: 0,
+    why: 'The f turns {step} into its value, 3. Numbers are fine inside f-strings.' },
+  { code: 'text = "  hi  "\ntext.strip()\nprint(len(text))', choices: ['2', '6', '4'], right: 1,
+    why: 'strip() made a new string but nobody saved it. text still has 2 spaces + hi + 2 spaces = 6 characters.' },
+  { code: 'task = "find cafes"\nprint(f"TASK: {task.upper()}")', choices: ['TASK: find cafes', 'TASK: FIND CAFES', 'TASK: {task.upper()}'], right: 1,
+    why: 'You can run code inside the curly brackets, even a method.' },
+];
+const quizEl = document.getElementById('quiz');
+questions.forEach((q, qi) => {
+  const wrap = document.createElement('div'); wrap.className = 'q';
+  const pre = document.createElement('pre'); const code = document.createElement('code');
+  code.textContent = q.code; pre.appendChild(code);
+  const label = document.createElement('div'); label.textContent = `${qi + 1}. What does this print?`;
+  const choices = document.createElement('div'); choices.className = 'choices';
+  const why = document.createElement('div'); why.className = 'why'; why.textContent = q.why;
+  q.choices.forEach((c, ci) => {
+    const b = document.createElement('button'); b.textContent = c;
+    b.onclick = () => {
+      if (wrap.classList.contains('answered')) return;
+      wrap.classList.add('answered');
+      b.classList.add(ci === q.right ? 'right' : 'wrong');
+      b.textContent = (ci === q.right ? '✓ ' : '✗ ') + c;
+      if (ci !== q.right) {
+        const r = choices.children[q.right]; r.classList.add('right'); r.textContent = '✓ ' + q.choices[q.right];
+      }
+    };
+    choices.appendChild(b);
+  });
+  wrap.append(label, pre, choices, why);
+  quizEl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
