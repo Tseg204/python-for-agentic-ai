@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 3: Numbers and Decisions</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7; --card: #ffffff; --line: #e4e2db;
+  --text: #16150f; --text-2: #55534c; --muted: #85837a;
+  --accent: #2a78d6; --accent-soft: #e6f0fb;
+  --code-bg: #f3f1ec; --term-bg: #1d1d1b; --term-text: #e9e7df;
+  --good: #1f7a3d; --good-soft: #e5f4ea; --warn: #9a5b00; --warn-soft: #fdf1dc;
+  --bad: #b3261e; --bad-soft: #fbe7e5;
+  --str: #b0461e; --num: #6250d6; --kw: #a3247a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #171716; --card: #21211f; --line: #363633;
+    --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+    --accent: #5a9cf0; --accent-soft: #1d2c40;
+    --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df;
+    --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+    --bad: #f28b82; --bad-soft: #3d1f1d;
+    --str: #f0936b; --num: #a99cf5; --kw: #e88bc8;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171716; --card: #21211f; --line: #363633;
+  --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+  --accent: #5a9cf0; --accent-soft: #1d2c40;
+  --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df;
+  --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+  --bad: #f28b82; --bad-soft: #3d1f1d;
+  --str: #f0936b; --num: #a99cf5; --kw: #e88bc8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 34px; line-height: 1.2; margin: 6px 0 8px; }
+h2 { font-size: 22px; margin: 0 0 8px; }
+.lead { color: var(--text-2); font-size: 19px; margin: 0; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-top: 20px; }
+.step { display: inline-block; background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  font-size: 13px; padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+code, pre, input.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 12px 0; }
+pre code { background: none; padding: 0; }
+.s { color: var(--str); } .n { color: var(--num); } .c { color: var(--muted); } .k { color: var(--kw); font-weight: 600; }
+.term { background: var(--term-bg); color: var(--term-text); border-radius: 10px; padding: 14px 16px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; overflow-x: auto; white-space: pre-wrap; }
+.note { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.note b { color: var(--warn); }
+.tip { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+
+button { font: inherit; font-size: 15px; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); }
+button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.btns button { font-family: ui-monospace, "SF Mono", Menlo, monospace; min-width: 44px; }
+
+/* types */
+.types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+@media (max-width: 560px) { .types { grid-template-columns: 1fr; } }
+.types > div { border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; }
+.types .big { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 22px; font-weight: 700; }
+.types .nm { font-size: 14px; color: var(--text-2); }
+
+/* math lab */
+.mathrow { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-top: 12px; }
+.mathrow label { font-size: 14px; color: var(--text-2); }
+.mathrow input { display: block; width: 110px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); margin-top: 4px; }
+
+/* comparisons */
+.slider { margin-top: 12px; }
+.slider label { display: flex; justify-content: space-between; font-size: 15px; }
+.slider input[type=range] { width: 100%; accent-color: var(--accent); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+@media (max-width: 560px) { .cmp { grid-template-columns: 1fr; } }
+.cmp > div { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.cmp .say { font-size: 13px; color: var(--muted); display: block; }
+.chip { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; font-size: 14px;
+  padding: 2px 10px; border-radius: 99px; white-space: nowrap; }
+.chip.t { background: var(--good-soft); color: var(--good); }
+.chip.f { background: var(--bad-soft); color: var(--bad); }
+
+/* flow */
+.flow { display: block; margin: 12px auto 0; max-width: 640px; width: 100%; height: auto; }
+.flow .box { fill: var(--card); stroke: var(--line); stroke-width: 2; transition: all .2s; }
+.flow .dia { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+.flow .t { fill: var(--text); font-size: 14px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.flow .lbl { fill: var(--text); font-size: 14px; font-weight: 600; }
+.flow .sm { fill: var(--muted); font-size: 12px; font-weight: 600; }
+.flow .arr { stroke: var(--line); stroke-width: 2.5; fill: none; transition: stroke .2s; }
+.flow .on.box { fill: var(--good-soft); stroke: var(--good); }
+.flow .on.arr { stroke: var(--good); }
+.codeview { margin-top: 12px; background: var(--code-bg); border-radius: 10px; padding: 10px 0; overflow-x: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+.codeview div { padding: 1px 16px; white-space: pre; border-left: 4px solid transparent; }
+.codeview div.run { background: var(--good-soft); border-left-color: var(--good); }
+.codeview div.skip { opacity: .45; }
+
+/* indent picture */
+.indent { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 560px) { .indent { grid-template-columns: 1fr; } }
+.indent > div { border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+.indent h3 { margin: 0 0 4px; font-size: 16px; }
+.indent .bad h3 { color: var(--bad); } .indent .good h3 { color: var(--good); }
+.sp { background: var(--accent-soft); color: var(--accent); border-radius: 3px; }
+
+/* predict */
+.q { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.q .choices { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.q .choices button { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; }
+.q .choices button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.q .choices button.wrong { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.q .why { display: none; margin-top: 10px; color: var(--text-2); }
+.q.answered .why { display: block; }
+
+ul.mistakes { padding-left: 20px; margin: 8px 0 0; }
+ul.mistakes li { margin-bottom: 8px; }
+.next { text-align: center; color: var(--text-2); margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Session 3 of 20 · Python for Agentic AI</div>
+  <h1>Numbers and decisions</h1>
+  <p class="lead">Today your agent learns to count, and to decide when to stop.</p>
+
+  <section>
+    <span class="step">Why this matters</span>
+    <h2>Every agent keeps asking "should I keep going?"</h2>
+    <p>An agent works in steps. After each step it checks: am I done? Did I run out of steps? Did I spend too much? Each check is a yes/no question about numbers. Today you'll write those checks.</p>
+  </section>
+
+  <section>
+    <span class="step">Step 1</span>
+    <h2>Three new kinds of values</h2>
+    <p>You know strings (text). Here are three more. No quotes on any of them.</p>
+    <div class="types">
+      <div><div class="big n">5</div><div class="nm"><b>int</b>: a whole number<br>like a step count</div></div>
+      <div><div class="big n">2.4</div><div class="nm"><b>float</b>: a number with a dot<br>like a cost in dollars</div></div>
+      <div><div class="big k">True</div><div class="nm"><b>bool</b>: <code>True</code> or <code>False</code><br>the answer to a yes/no question</div></div>
+    </div>
+    <div class="note"><b>Quotes change everything.</b> <code>5</code> is a number. <code>"5"</code> is text that looks like a number. Python can do math with the first, not the second.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 2</span>
+    <h2>Math, the Python way</h2>
+    <p>Python does math like a calculator. Change the numbers and click a sign.</p>
+    <div class="mathrow">
+      <label>a <input class="mono" id="ma" type="number" value="7"></label>
+      <label>b <input class="mono" id="mb" type="number" value="2"></label>
+    </div>
+    <div class="btns" id="mbtns"></div>
+    <pre><code id="mcode"></code></pre>
+    <div class="term" id="mout"></div>
+    <div class="tip">Dividing with <code>/</code> always gives a float, even <code>6 / 2</code> gives <code>3.0</code>. Agents use math like this to count steps left or add up what an AI call cost.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 3</span>
+    <h2>Comparing gives you True or False</h2>
+    <p>A <b>comparison</b> asks a yes/no question about two values. The answer is always <code>True</code> or <code>False</code>. Move the sliders.</p>
+    <div class="slider"><label><span><code>step</code></span><b id="sv"></b></label><input type="range" id="ss" min="0" max="10" value="3"></div>
+    <div class="slider"><label><span><code>max_steps</code></span><b id="mv"></b></label><input type="range" id="ms" min="0" max="10" value="5"></div>
+    <div class="cmp" id="cmp"></div>
+    <div class="note"><b>One = or two?</b> <code>=</code> puts a value in a variable. <code>==</code> asks "are these equal?". Mixing them up is the number one beginner bug here.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 4</span>
+    <h2><code>if</code> / <code>elif</code> / <code>else</code>: picking a path</h2>
+    <p>An <b>if</b> runs some code only when a comparison is <code>True</code>. <code>elif</code> means "else, if" (another check). <code>else</code> catches everything left. Python checks top to bottom and runs only the <b>first</b> match.</p>
+    <p>Here <code>max_steps</code> is 5. Slide <code>step</code> and watch which path the agent takes.</p>
+    <div class="slider"><label><span><code>step</code></span><b id="fv"></b></label><input type="range" id="fs" min="0" max="8" value="2"></div>
+    <svg class="flow" viewBox="0 0 640 250" role="img" aria-label="Decision flowchart: stop, wrap up, or keep going">
+      <rect class="box" id="b1" x="20" y="20" width="250" height="44" rx="10"/>
+      <text class="t" x="145" y="47" text-anchor="middle">step &gt;= max_steps ?</text>
+      <rect class="box" id="b2" x="20" y="103" width="250" height="44" rx="10"/>
+      <text class="t" x="145" y="130" text-anchor="middle">step == max_steps - 1 ?</text>
+      <path class="arr" id="a1y" d="M272,42 L390,42"/>
+      <path class="arr" id="a1n" d="M145,66 L145,101"/>
+      <path class="arr" id="a2y" d="M272,125 L390,125"/>
+      <path class="arr" id="a2n" d="M145,149 L145,184"/>
+      <text class="sm" x="330" y="34" text-anchor="middle">True</text>
+      <text class="sm" x="160" y="88">False</text>
+      <text class="sm" x="330" y="117" text-anchor="middle">True</text>
+      <text class="sm" x="160" y="171">False</text>
+      <rect class="box" id="o1" x="392" y="20" width="228" height="44" rx="10"/>
+      <text class="lbl" x="506" y="47" text-anchor="middle">🛑 Stop: hit the limit</text>
+      <rect class="box" id="o2" x="392" y="103" width="228" height="44" rx="10"/>
+      <text class="lbl" x="506" y="130" text-anchor="middle">⏳ Last step, wrap up</text>
+      <rect class="box" id="o3" x="20" y="186" width="250" height="44" rx="10"/>
+      <text class="lbl" x="145" y="213" text-anchor="middle">▶️ Keep going</text>
+    </svg>
+    <div class="codeview" id="fcode"></div>
+    <div class="term" id="fout" style="margin-top:12px"></div>
+  </section>
+
+  <section>
+    <span class="step">Step 5</span>
+    <h2>The colon and the indent</h2>
+    <p>Two small things make an <code>if</code> work. A colon <code>:</code> at the end of the line. And the code inside is pushed right by 4 spaces (that push is called an <b>indent</b>). The indent is how Python knows which lines belong to the <code>if</code>.</p>
+    <div class="indent">
+      <div class="bad"><h3>Breaks</h3><pre><code><span class="k">if</span> step &gt; <span class="n">5</span>
+print(<span class="s">"Stop"</span>)</code></pre><div class="term"><span style="color:#f28b82">SyntaxError: expected ':'</span></div></div>
+      <div class="good"><h3>Works</h3><pre><code><span class="k">if</span> step &gt; <span class="n">5</span>:
+<span class="sp">····</span>print(<span class="s">"Stop"</span>)
+print(<span class="s">"Always runs"</span>)</code></pre><div class="term">The last line is not indented,
+so it runs either way.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="step">Step 6</span>
+    <h2>Joining checks: <code>and</code>, <code>or</code>, <code>not</code></h2>
+    <p>Sometimes one check isn't enough. These words join them, and they read like English.</p>
+<pre><code><span class="k">if</span> is_done <span class="k">or</span> cost &gt; budget:       <span class="c"># either one is enough to stop</span>
+    print(<span class="s">"Stop"</span>)
+
+<span class="k">if</span> step &lt; max_steps <span class="k">and</span> <span class="k">not</span> is_done:  <span class="c"># both must be True</span>
+    print(<span class="s">"Keep going"</span>)</code></pre>
+  </section>
+
+  <section>
+    <span class="step">Step 7</span>
+    <h2>Predict the output</h2>
+    <p>Guess first, then click.</p>
+    <div id="quiz"></div>
+  </section>
+
+  <section>
+    <span class="step">Watch out</span>
+    <h2>Common beginner mistakes</h2>
+    <ul class="mistakes">
+      <li><b><code>=</code> instead of <code>==</code>:</b> <code>if step = 5:</code> is an error. Asking needs two.</li>
+      <li><b>Forgetting the colon</b> at the end of <code>if</code>, <code>elif</code> and <code>else</code>.</li>
+      <li><b>Forgetting to indent</b> the lines inside, or indenting by different amounts.</li>
+      <li><b>Comparing text to a number:</b> <code>"5" == 5</code> is <code>False</code>. They are different kinds of values.</li>
+      <li><b>Writing true instead of True:</b> it needs a capital T (and F).</li>
+    </ul>
+  </section>
+
+  <p class="next">Next: open <code>lessons/session-03/exercise.py</code> and teach your agent when to stop.</p>
+</main>
+
+<script>
+// ---- math lab ----
+const ops = [
+  { s: '+', f: (a, b) => a + b, say: 'add' },
+  { s: '-', f: (a, b) => a - b, say: 'subtract' },
+  { s: '*', f: (a, b) => a * b, say: 'multiply (star, not x)' },
+  { s: '/', f: (a, b) => a / b, say: 'divide (always gives a float)' },
+];
+const ma = document.getElementById('ma'), mb = document.getElementById('mb');
+const mbtns = document.getElementById('mbtns'), mcode = document.getElementById('mcode'), mout = document.getElementById('mout');
+let op = 3;
+function pyNum(x, forceFloat) {
+  if (!isFinite(x)) return null;
+  const r = Math.round(x * 1e10) / 1e10;
+  if (forceFloat && Number.isInteger(r)) return r.toFixed(1);
+  return String(r);
+}
+function runMath() {
+  const a = Number(ma.value), b = Number(mb.value);
+  const aInt = Number.isInteger(a) && Number.isInteger(b);
+  const o = ops[op];
+  mcode.textContent = `print(${ma.value || 0} ${o.s} ${mb.value || 0})    # ${o.say}`;
+  if (o.s === '/' && b === 0) {
+    mout.innerHTML = '<span style="color:#f28b82">ZeroDivisionError: division by zero</span>';
+  } else {
+    mout.textContent = pyNum(o.f(a, b), o.s === '/' || !aInt);
+  }
+  [...mbtns.children].forEach((b, i) => b.classList.toggle('on', i === op));
+}
+ops.forEach((o, i) => {
+  const b = document.createElement('button'); b.textContent = o.s;
+  b.onclick = () => { op = i; runMath(); }; mbtns.appendChild(b);
+});
+[ma, mb].forEach(el => el.addEventListener('input', runMath));
+runMath();
+
+// ---- comparisons ----
+const ss = document.getElementById('ss'), ms = document.getElementById('ms'), cmp = document.getElementById('cmp');
+const cmps = [
+  { s: '==', f: (a, b) => a === b, say: 'equal?' },
+  { s: '!=', f: (a, b) => a !== b, say: 'not equal?' },
+  { s: '>', f: (a, b) => a > b, say: 'bigger?' },
+  { s: '<', f: (a, b) => a < b, say: 'smaller?' },
+  { s: '>=', f: (a, b) => a >= b, say: 'bigger or equal?' },
+  { s: '<=', f: (a, b) => a <= b, say: 'smaller or equal?' },
+];
+function runCmp() {
+  const a = +ss.value, b = +ms.value;
+  document.getElementById('sv').textContent = a;
+  document.getElementById('mv').textContent = b;
+  cmp.innerHTML = '';
+  cmps.forEach(c => {
+    const r = c.f(a, b);
+    const d = document.createElement('div');
+    d.innerHTML = `<span><code>step ${c.s} max_steps</code><span class="say">${c.say}</span></span>` +
+      `<span class="chip ${r ? 't' : 'f'}">${r ? 'True' : 'False'}</span>`;
+    cmp.appendChild(d);
+  });
+}
+[ss, ms].forEach(el => el.addEventListener('input', runCmp));
+runCmp();
+
+// ---- if/elif/else flow ----
+const fs = document.getElementById('fs'), fcode = document.getElementById('fcode'), fout = document.getElementById('fout');
+const lines = [
+  'max_steps = 5',
+  'step = ?',
+  '',
+  'if step >= max_steps:',
+  '    print("Stop: hit the limit")',
+  'elif step == max_steps - 1:',
+  '    print("Last step, wrap up")',
+  'else:',
+  '    print("Keep going")',
+];
+function runFlow() {
+  const step = +fs.value, max = 5;
+  document.getElementById('fv').textContent = step;
+  const c1 = step >= max, c2 = !c1 && step === max - 1;
+  const path = c1 ? 1 : c2 ? 2 : 3;
+  const on = new Set(['b1']);
+  if (path === 1) { on.add('a1y'); on.add('o1'); }
+  else { on.add('a1n'); on.add('b2'); if (path === 2) { on.add('a2y'); on.add('o2'); } else { on.add('a2n'); on.add('o3'); } }
+  ['b1','b2','a1y','a1n','a2y','a2n','o1','o2','o3'].forEach(id =>
+    document.getElementById(id).classList.toggle('on', on.has(id)));
+  fcode.innerHTML = '';
+  lines.forEach((l, i) => {
+    const d = document.createElement('div');
+    d.textContent = i === 1 ? `step = ${step}` : (l || ' ');
+    const runLine = { 1: 4, 2: 6, 3: 8 }[path];
+    if (i === runLine) d.className = 'run';
+    else if ([4, 6, 8].includes(i)) d.className = 'skip';
+    fcode.appendChild(d);
+  });
+  fout.textContent = ['Stop: hit the limit', 'Last step, wrap up', 'Keep going'][path - 1];
+}
+fs.addEventListener('input', runFlow);
+runFlow();
+
+// ---- predict the output ----
+const questions = [
+  { code: 'print(10 / 2)', choices: ['5', '5.0', '"5"'], right: 1,
+    why: '/ always gives a float, so you get 5.0 even when it divides evenly.' },
+  { code: 'step = 4\nmax_steps = 5\nprint(step >= max_steps)', choices: ['True', 'False', '4'], right: 1,
+    why: 'Is 4 bigger than or equal to 5? No. A comparison prints True or False.' },
+  { code: 'print("5" == 5)', choices: ['True', 'False', 'an error'], right: 1,
+    why: '"5" is text and 5 is a number. Different kinds of values are never equal.' },
+  { code: 'cost = 3\nif cost > 2:\n    print("pricey")\nelif cost > 1:\n    print("ok")\nelse:\n    print("cheap")', choices: ['pricey', 'pricey\nok', 'ok'], right: 0,
+    why: '3 > 2 is True, so "pricey" prints and Python skips the rest. Only the first match runs, even though 3 > 1 is also True.' },
+  { code: 'step = 1\nif step > 3:\n    print("A")\nprint("B")', choices: ['A', 'B', 'A and B'], right: 1,
+    why: '1 > 3 is False, so "A" is skipped. print("B") is not indented, so it runs no matter what.' },
+];
+const quizEl = document.getElementById('quiz');
+questions.forEach((q, qi) => {
+  const wrap = document.createElement('div'); wrap.className = 'q';
+  const pre = document.createElement('pre'); const code = document.createElement('code');
+  code.textContent = q.code; pre.appendChild(code);
+  const label = document.createElement('div'); label.textContent = `${qi + 1}. What does this print?`;
+  const choices = document.createElement('div'); choices.className = 'choices';
+  const why = document.createElement('div'); why.className = 'why'; why.textContent = q.why;
+  q.choices.forEach((c, ci) => {
+    const b = document.createElement('button'); b.textContent = c.replace('\n', ' then ');
+    b.onclick = () => {
+      if (wrap.classList.contains('answered')) return;
+      wrap.classList.add('answered');
+      b.classList.add(ci === q.right ? 'right' : 'wrong');
+      b.textContent = (ci === q.right ? '✓ ' : '✗ ') + b.textContent;
+      if (ci !== q.right) {
+        const r = choices.children[q.right]; r.classList.add('right'); r.textContent = '✓ ' + r.textContent;
+      }
+    };
+    choices.appendChild(b);
+  });
+  wrap.append(label, pre, choices, why);
+  quizEl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
