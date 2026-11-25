@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 4: Lists</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7; --card: #ffffff; --line: #e4e2db;
+  --text: #16150f; --text-2: #55534c; --muted: #85837a;
+  --accent: #2a78d6; --accent-soft: #e6f0fb;
+  --code-bg: #f3f1ec; --term-bg: #1d1d1b; --term-text: #e9e7df;
+  --good: #1f7a3d; --good-soft: #e5f4ea; --warn: #9a5b00; --warn-soft: #fdf1dc;
+  --bad: #b3261e; --bad-soft: #fbe7e5;
+  --str: #b0461e; --num: #6250d6; --kw: #a3247a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #171716; --card: #21211f; --line: #363633;
+    --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+    --accent: #5a9cf0; --accent-soft: #1d2c40;
+    --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df;
+    --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+    --bad: #f28b82; --bad-soft: #3d1f1d;
+    --str: #f0936b; --num: #a99cf5; --kw: #e88bc8;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171716; --card: #21211f; --line: #363633;
+  --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+  --accent: #5a9cf0; --accent-soft: #1d2c40;
+  --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df;
+  --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+  --bad: #f28b82; --bad-soft: #3d1f1d;
+  --str: #f0936b; --num: #a99cf5; --kw: #e88bc8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 34px; line-height: 1.2; margin: 6px 0 8px; }
+h2 { font-size: 22px; margin: 0 0 8px; }
+.lead { color: var(--text-2); font-size: 19px; margin: 0; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-top: 20px; }
+.step { display: inline-block; background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  font-size: 13px; padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+code, pre, input.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 12px 0; }
+pre code { background: none; padding: 0; }
+.s { color: var(--str); } .n { color: var(--num); } .c { color: var(--muted); } .k { color: var(--kw); font-weight: 600; }
+.term { background: var(--term-bg); color: var(--term-text); border-radius: 10px; padding: 14px 16px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; overflow-x: auto; white-space: pre-wrap; }
+.note { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.note b { color: var(--warn); }
+.tip { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+
+button { font: inherit; font-size: 15px; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); }
+button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:disabled { opacity: .45; cursor: default; }
+.btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+.mono-btn { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+/* list boxes */
+.boxes { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.cell { min-width: 120px; flex: 1 1 120px; border: 2px solid var(--line); border-radius: 12px; overflow: hidden;
+  cursor: pointer; background: var(--card); transition: all .15s; text-align: center; }
+.cell .idx { display: flex; justify-content: space-between; padding: 4px 10px; background: var(--code-bg);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; font-weight: 700; }
+.cell .idx .p { color: var(--accent); } .cell .idx .m { color: var(--num); }
+.cell .val { padding: 10px 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; color: var(--str); }
+.cell.on { border-color: var(--good); background: var(--good-soft); }
+.cell.dim { opacity: .4; }
+.cell.new { animation: pop .35s ease; }
+@keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.legend { font-size: 14px; color: var(--text-2); margin-top: 8px; }
+.legend .p { color: var(--accent); font-weight: 700; } .legend .m { color: var(--num); font-weight: 700; }
+
+/* chat */
+.chat { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; min-height: 40px; }
+.msg { display: flex; gap: 10px; align-items: center; }
+.msg .i { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: var(--muted); width: 30px; text-align: right; flex: none; }
+.msg .b { border-radius: 12px; padding: 6px 12px; font-size: 15px; max-width: 80%; }
+.msg.user .b { background: var(--accent-soft); }
+.msg.agent .b { background: var(--code-bg); }
+.msg.new .b { animation: pop .3s ease; }
+input.txt { font: inherit; font-size: 15px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); flex: 1; min-width: 160px; }
+
+.slider { margin-top: 12px; }
+.slider label { display: flex; justify-content: space-between; font-size: 15px; }
+.slider input[type=range] { width: 100%; accent-color: var(--accent); }
+
+.chip { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; font-size: 14px;
+  padding: 2px 10px; border-radius: 99px; white-space: nowrap; }
+.chip.t { background: var(--good-soft); color: var(--good); }
+.chip.f { background: var(--bad-soft); color: var(--bad); }
+
+/* predict */
+.q { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.q .choices { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.q .choices button { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; }
+.q .choices button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.q .choices button.wrong { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.q .why { display: none; margin-top: 10px; color: var(--text-2); }
+.q.answered .why { display: block; }
+
+ul.mistakes { padding-left: 20px; margin: 8px 0 0; }
+ul.mistakes li { margin-bottom: 8px; }
+.next { text-align: center; color: var(--text-2); margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Session 4 of 20 · Python for Agentic AI</div>
+  <h1>Lists</h1>
+  <p class="lead">Today your agent gets a memory and a to-do list.</p>
+
+  <section>
+    <span class="step">Why this matters</span>
+    <h2>An agent's memory is a list</h2>
+    <p>When you chat with an AI, it doesn't really "remember" you. Your program keeps every message in a <b>list</b> and sends the whole list each time. Agents also keep a list of tasks: things still to do. So lists are everywhere in agent code.</p>
+  </section>
+
+  <section>
+    <span class="step">Step 1</span>
+    <h2>Making a list</h2>
+    <p>A list is many values in one variable. Square brackets around it, commas between items.</p>
+<pre><code>tasks = [<span class="s">"search the web"</span>, <span class="s">"read the page"</span>, <span class="s">"write a summary"</span>]</code></pre>
+    <p>Each item has a position number, called an <b>index</b>. Python starts counting at <b>0</b>, not 1. You can also count from the end with negative numbers. Click a box.</p>
+    <div class="boxes" id="idxBoxes"></div>
+    <div class="legend"><span class="p">blue</span> = counting from the start · <span class="m">purple</span> = counting from the end</div>
+    <pre><code id="idxCode"></code></pre>
+    <div class="term" id="idxOut"></div>
+    <div class="tip"><code>tasks[-1]</code> is the handiest one: it always gets the <b>last</b> item, no matter how long the list is. Agents use it to grab the newest message.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 2</span>
+    <h2>Adding with <code>append</code>, counting with <code>len</code></h2>
+    <p><code>.append(x)</code> sticks a new item on the end. <code>len(x)</code> tells you how many items there are. This is a chat history being built, one message at a time. Type something and append it.</p>
+<pre><code>history = []    <span class="c"># an empty list to start</span></code></pre>
+    <div class="btns">
+      <input class="txt" id="chatIn" value="what's the weather?" aria-label="message">
+      <button class="on mono-btn" id="chatAdd">history.append(...)</button>
+    </div>
+    <div class="chat" id="chat"></div>
+    <div class="term" id="chatOut" style="margin-top:12px"></div>
+    <div class="note"><b>Don't write</b> <code>history = history.append(x)</code>. <code>append</code> changes the list in place and gives back nothing (<code>None</code>). Just write <code>history.append(x)</code> on its own line.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 3</span>
+    <h2>Taking things out with <code>pop</code></h2>
+    <p>When the agent finishes a task, it takes it off the list. <code>.pop(0)</code> removes the first item <b>and hands it back</b>, so you can save it in a variable.</p>
+<pre><code>done = tasks.pop(<span class="n">0</span>)
+print(<span class="s">f"Done: {done}"</span>)
+print(len(tasks))</code></pre>
+    <div class="boxes" id="popBoxes"></div>
+    <div class="btns">
+      <button class="on mono-btn" id="popBtn">done = tasks.pop(0)</button>
+      <button id="popReset">Reset</button>
+    </div>
+    <div class="term" id="popOut" style="margin-top:12px"></div>
+    <div class="tip"><code>.pop()</code> with nothing inside removes the <b>last</b> item instead.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 4</span>
+    <h2>Is it in there? <code>in</code></h2>
+    <p><code>x in my_list</code> asks "is x somewhere in this list?" and gives <code>True</code> or <code>False</code>. Great with <code>if</code>. Here the agent checks whether a tool is blocked before it uses it.</p>
+<pre><code>blocked_tools = [<span class="s">"delete_files"</span>, <span class="s">"send_money"</span>]</code></pre>
+    <div class="btns" id="inBtns"></div>
+    <pre><code id="inCode"></code></pre>
+    <div class="term" id="inOut"></div>
+  </section>
+
+  <section>
+    <span class="step">Step 5</span>
+    <h2>Taking a slice</h2>
+    <p>An AI can only read so much at once. So agents often send just the newest few messages. A <b>slice</b> gets part of a list: <code>history[-3:]</code> means "from 3 from the end, to the end".</p>
+    <div class="slider"><label><span>keep the last <b id="slN"></b> messages</span><code id="slCode"></code></label><input type="range" id="slR" min="1" max="6" value="3"></div>
+    <div class="boxes" id="slBoxes"></div>
+  </section>
+
+  <section>
+    <span class="step">Step 6</span>
+    <h2>Predict the output</h2>
+    <p>Guess first, then click.</p>
+    <div id="quiz"></div>
+  </section>
+
+  <section>
+    <span class="step">Watch out</span>
+    <h2>Common beginner mistakes</h2>
+    <ul class="mistakes">
+      <li><b>Starting at 1:</b> the first item is <code>tasks[0]</code>, not <code>tasks[1]</code>.</li>
+      <li><b>Going past the end:</b> a list of 3 has <code>[0]</code>, <code>[1]</code>, <code>[2]</code>. Asking for <code>[3]</code> crashes with <code>IndexError</code>.</li>
+      <li><b>Saving what append gives back:</b> <code>x = x.append(...)</code> turns your list into <code>None</code>.</li>
+      <li><b>Missing commas:</b> <code>["a" "b"]</code> quietly glues them into one item, <code>"ab"</code>.</li>
+      <li><b>Round brackets:</b> lists use square ones <code>[ ]</code>, both to make them and to get items.</li>
+    </ul>
+  </section>
+
+  <p class="next">Next: open <code>lessons/session-04/exercise.py</code> and give your agent a to-do list and a memory.</p>
+</main>
+
+<script>
+const el = id => document.getElementById(id);
+const q = s => `"${s}"`;
+function cells(container, items, opts = {}) {
+  container.innerHTML = '';
+  items.forEach((v, i) => {
+    const d = document.createElement('div');
+    d.className = 'cell' + (opts.on && opts.on(i) ? ' on' : '') + (opts.dim && opts.dim(i) ? ' dim' : '');
+    d.innerHTML = `<div class="idx"><span class="p">${i}</span><span class="m">${i - items.length}</span></div><div class="val"></div>`;
+    d.querySelector('.val').textContent = q(v);
+    if (opts.click) d.onclick = () => opts.click(i);
+    container.appendChild(d);
+  });
+}
+
+// ---- Step 1: indexes ----
+const tasks0 = ['search the web', 'read the page', 'write a summary'];
+let pick = 0, neg = false;
+function drawIdx() {
+  cells(el('idxBoxes'), tasks0, { on: i => i === pick, click: i => { neg = (i === pick) ? !neg : false; pick = i; drawIdx(); } });
+  const n = neg ? pick - tasks0.length : pick;
+  el('idxCode').textContent = `print(tasks[${n}])    # click the same box again to flip + / -`;
+  el('idxOut').textContent = tasks0[pick];
+}
+drawIdx();
+
+// ---- Step 2: append / len ----
+const history = [];
+const starts = [['user', 'hi'], ['agent', 'hello! how can I help?']];
+function drawChat(fresh) {
+  const c = el('chat'); c.innerHTML = '';
+  history.forEach((m, i) => {
+    const d = document.createElement('div');
+    d.className = 'msg ' + (m.startsWith('user') ? 'user' : 'agent') + (fresh && i === history.length - 1 ? ' new' : '');
+    d.innerHTML = `<span class="i">[${i}]</span><span class="b"></span>`;
+    d.querySelector('.b').textContent = m;
+    c.appendChild(d);
+  });
+  el('chatOut').textContent =
+    `>>> len(history)\n${history.length}\n>>> history[-1]\n${history.length ? q(history[history.length - 1]) : "IndexError: list index out of range"}`;
+}
+starts.forEach(([r, t]) => history.push(`${r}: ${t}`));
+drawChat(false);
+let nextRole = 'user';
+el('chatAdd').onclick = () => {
+  const t = el('chatIn').value.trim(); if (!t) return;
+  history.push(`${nextRole}: ${t}`);
+  nextRole = nextRole === 'user' ? 'agent' : 'user';
+  el('chatIn').value = nextRole === 'agent' ? 'sunny and 21°C' : 'thanks!';
+  el('chatAdd').textContent = `history.append("${nextRole}: ...")`;
+  drawChat(true);
+};
+el('chatAdd').textContent = 'history.append("user: ...")';
+
+// ---- Step 3: pop ----
+let ptasks;
+function popReset() {
+  ptasks = ['search the web', 'read the page', 'write a summary'];
+  cells(el('popBoxes'), ptasks);
+  el('popOut').textContent = `tasks has ${ptasks.length} items`;
+  el('popBtn').disabled = false;
+}
+el('popBtn').onclick = () => {
+  if (!ptasks.length) return;
+  const done = ptasks.shift();
+  cells(el('popBoxes'), ptasks);
+  el('popOut').textContent = `Done: ${done}\n${ptasks.length}`;
+  if (!ptasks.length) { el('popBtn').disabled = true; el('popOut').textContent += '\n(empty list! pop now would crash: IndexError)'; }
+};
+el('popReset').onclick = popReset;
+popReset();
+
+// ---- Step 4: in ----
+const blocked = ['delete_files', 'send_money'];
+const tools = ['search', 'send_money', 'read_file', 'delete_files'];
+let tool = 1;
+function drawIn() {
+  [...el('inBtns').children].forEach((b, i) => b.classList.toggle('on', i === tool));
+  const t = tools[tool];
+  el('inCode').textContent = `tool_request = "${t}"\nif tool_request in blocked_tools:\n    print("Blocked")\nelse:\n    print("Allowed")`;
+  const r = blocked.includes(t);
+  el('inOut').innerHTML = `<span style="opacity:.6">tool_request in blocked_tools → ${r ? 'True' : 'False'}</span>\n${r ? 'Blocked' : 'Allowed'}`;
+}
+tools.forEach((t, i) => {
+  const b = document.createElement('button'); b.className = 'mono-btn'; b.textContent = t;
+  b.onclick = () => { tool = i; drawIn(); }; el('inBtns').appendChild(b);
+});
+drawIn();
+
+// ---- Step 5: slice ----
+const longHist = ['user: hi', 'agent: hello!', 'user: plan a trip', 'agent: where to?', 'user: Rome', 'agent: great pick!'];
+function drawSlice() {
+  const n = +el('slR').value;
+  el('slN').textContent = n;
+  el('slCode').textContent = `history[-${n}:]`;
+  cells(el('slBoxes'), longHist, { on: i => i >= longHist.length - n, dim: i => i < longHist.length - n });
+}
+el('slR').addEventListener('input', drawSlice);
+drawSlice();
+
+// ---- Predict ----
+const questions = [
+  { code: 'colors = ["red", "green", "blue"]\nprint(colors[1])', choices: ['red', 'green', 'blue'], right: 1,
+    why: 'Counting starts at 0, so [0] is red and [1] is green.' },
+  { code: 'colors = ["red", "green", "blue"]\nprint(colors[-1])', choices: ['red', 'blue', 'an error'], right: 1,
+    why: '-1 always means the last item.' },
+  { code: 'nums = [4, 8]\nnums.append(15)\nprint(len(nums))', choices: ['2', '3', '15'], right: 1,
+    why: 'append adds one item, so the list is now [4, 8, 15]. len counts items: 3.' },
+  { code: 'tasks = ["a", "b", "c"]\nfirst = tasks.pop(0)\nprint(first, tasks)', choices: ["a ['b', 'c']", "a ['a', 'b', 'c']", "c ['a', 'b']"], right: 0,
+    why: 'pop(0) takes out the first item and hands it back. The list keeps the rest.' },
+  { code: 'tools = ["search", "read"]\nprint("write" in tools)', choices: ['True', 'False', 'write'], right: 1,
+    why: '"write" is not in the list, so in gives False.' },
+];
+const quizEl = el('quiz');
+questions.forEach((qq, qi) => {
+  const wrap = document.createElement('div'); wrap.className = 'q';
+  const pre = document.createElement('pre'); const code = document.createElement('code');
+  code.textContent = qq.code; pre.appendChild(code);
+  const label = document.createElement('div'); label.textContent = `${qi + 1}. What does this print?`;
+  const choices = document.createElement('div'); choices.className = 'choices';
+  const why = document.createElement('div'); why.className = 'why'; why.textContent = qq.why;
+  qq.choices.forEach((c, ci) => {
+    const b = document.createElement('button'); b.textContent = c;
+    b.onclick = () => {
+      if (wrap.classList.contains('answered')) return;
+      wrap.classList.add('answered');
+      b.classList.add(ci === qq.right ? 'right' : 'wrong');
+      b.textContent = (ci === qq.right ? '✓ ' : '✗ ') + b.textContent;
+      if (ci !== qq.right) {
+        const r = choices.children[qq.right]; r.classList.add('right'); r.textContent = '✓ ' + r.textContent;
+      }
+    };
+    choices.appendChild(b);
+  });
+  wrap.append(label, pre, choices, why);
+  quizEl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
