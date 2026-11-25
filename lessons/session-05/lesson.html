@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 5: Loops</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7; --card: #ffffff; --line: #e4e2db;
+  --text: #16150f; --text-2: #55534c; --muted: #85837a;
+  --accent: #2a78d6; --accent-soft: #e6f0fb;
+  --code-bg: #f3f1ec; --term-bg: #1d1d1b; --term-text: #e9e7df;
+  --good: #1f7a3d; --good-soft: #e5f4ea; --warn: #9a5b00; --warn-soft: #fdf1dc;
+  --bad: #b3261e; --bad-soft: #fbe7e5;
+  --str: #b0461e; --num: #6250d6; --kw: #a3247a;
+  --hl: #fff4c2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #171716; --card: #21211f; --line: #363633;
+    --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+    --accent: #5a9cf0; --accent-soft: #1d2c40;
+    --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df;
+    --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+    --bad: #f28b82; --bad-soft: #3d1f1d;
+    --str: #f0936b; --num: #a99cf5; --kw: #e88bc8;
+    --hl: #3d3517;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171716; --card: #21211f; --line: #363633;
+  --text: #f0efea; --text-2: #c4c2b8; --muted: #8f8d85;
+  --accent: #5a9cf0; --accent-soft: #1d2c40;
+  --code-bg: #2a2a27; --term-bg: #0f0f0e; --term-text: #e9e7df;
+  --good: #7dd492; --good-soft: #1c3324; --warn: #f3b34c; --warn-soft: #3a2c14;
+  --bad: #f28b82; --bad-soft: #3d1f1d;
+  --str: #f0936b; --num: #a99cf5; --kw: #e88bc8;
+  --hl: #3d3517;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 34px; line-height: 1.2; margin: 6px 0 8px; }
+h2 { font-size: 22px; margin: 0 0 8px; }
+.lead { color: var(--text-2); font-size: 19px; margin: 0; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-top: 20px; }
+.step { display: inline-block; background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  font-size: 13px; padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 12px 0; }
+pre code { background: none; padding: 0; }
+.s { color: var(--str); } .n { color: var(--num); } .c { color: var(--muted); } .k { color: var(--kw); font-weight: 600; }
+.term { background: var(--term-bg); color: var(--term-text); border-radius: 10px; padding: 14px 16px; min-height: 52px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; overflow-x: auto; white-space: pre-wrap; }
+.note { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.note b { color: var(--warn); }
+.tip { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+
+button { font: inherit; font-size: 15px; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); }
+button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:disabled { opacity: .45; cursor: default; }
+.btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+
+/* agent loop diagram */
+.cycle { display: block; margin: 14px auto 0; max-width: 100%; height: auto; }
+.cycle .box { fill: var(--card); stroke: var(--line); stroke-width: 2; }
+.cycle .box.on { fill: var(--accent-soft); stroke: var(--accent); }
+.cycle text { fill: var(--text); font: 600 15px -apple-system, BlinkMacSystemFont, sans-serif; text-anchor: middle; }
+.cycle .sub { fill: var(--muted); font-weight: 400; font-size: 12px; }
+.cycle .arrow { stroke: var(--muted); stroke-width: 2; fill: none; marker-end: url(#ah); }
+.cycle .exit { stroke: var(--good); }
+.cycle .exitT { fill: var(--good); font-size: 13px; }
+
+/* tracer */
+.tracer { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+.codebox { background: var(--code-bg); border-radius: 10px; padding: 10px 0; overflow-x: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; }
+.codebox .ln { padding: 1px 16px 1px 12px; white-space: pre; border-left: 4px solid transparent; }
+.codebox .ln .num { color: var(--muted); display: inline-block; width: 22px; user-select: none; }
+.codebox .ln.cur { background: var(--hl); border-left-color: var(--warn); }
+.side { display: flex; gap: 10px; flex-wrap: wrap; }
+.vars { flex: 1 1 200px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.vars .h, .why-now .h { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+.vars .v { font-family: ui-monospace, "SF Mono", Menlo, monospace; margin-top: 4px; }
+.vars .v.changed { color: var(--good); font-weight: 700; }
+.why-now { flex: 2 1 260px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+.chip { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; font-size: 13px;
+  padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+.chip.t { background: var(--good-soft); color: var(--good); }
+.chip.f { background: var(--bad-soft); color: var(--bad); }
+.counter { font-size: 14px; color: var(--muted); }
+
+/* range boxes */
+.boxes { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.nb { width: 48px; height: 48px; border-radius: 10px; border: 2px solid var(--accent); background: var(--accent-soft);
+  display: grid; place-items: center; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; color: var(--accent);
+  animation: pop .3s ease; }
+@keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.slider { margin-top: 12px; }
+.slider label { display: flex; justify-content: space-between; font-size: 15px; }
+.slider input[type=range] { width: 100%; accent-color: var(--accent); }
+
+/* compare */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.two > div { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.two h3 { margin: 0 0 4px; font-size: 17px; }
+.two p { margin: 0; font-size: 15px; color: var(--text-2); }
+@media (max-width: 560px) { .two { grid-template-columns: 1fr; } }
+
+/* predict */
+.q { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.q .choices { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.q .choices button { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; white-space: pre; text-align: left; }
+.q .choices button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.q .choices button.wrong { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.q .why { display: none; margin-top: 10px; color: var(--text-2); }
+.q.answered .why { display: block; }
+
+ul.mistakes { padding-left: 20px; margin: 8px 0 0; }
+ul.mistakes li { margin-bottom: 8px; }
+.next { text-align: center; color: var(--text-2); margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Session 5 of 20 · Python for Agentic AI</div>
+  <h1>Loops</h1>
+  <p class="lead">Today you write the "keep going until done" loop that's inside every agent.</p>
+
+  <section>
+    <span class="step">Why this matters</span>
+    <h2>An agent is a loop</h2>
+    <p>An agent doesn't answer once and stop. It thinks, does something, checks the result, and goes round again until the job is done. In Python, "go round again" is a <b>loop</b>. Click through it.</p>
+    <svg class="cycle" id="cycle" viewBox="0 0 520 250" width="520" role="img" aria-label="Agent loop: think, act, check, repeat until done">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="color: var(--muted)"/></marker></defs>
+      <rect class="box" id="cy0" x="190" y="12" width="140" height="54" rx="12"/>
+      <text x="260" y="36">Think</text><text class="sub" x="260" y="54">what next?</text>
+      <rect class="box" id="cy1" x="360" y="150" width="140" height="54" rx="12"/>
+      <text x="430" y="174">Act</text><text class="sub" x="430" y="192">use a tool</text>
+      <rect class="box" id="cy2" x="20" y="150" width="140" height="54" rx="12"/>
+      <text x="90" y="174">Check</text><text class="sub" x="90" y="192">done yet?</text>
+      <path class="arrow" d="M330,48 Q420,60 430,146"/>
+      <path class="arrow" d="M358,186 L164,186"/>
+      <path class="arrow" d="M90,148 Q100,60 186,46"/>
+      <path class="arrow exit" d="M90,206 L90,238 L170,238"/>
+      <text class="exitT" x="225" y="242">yes → stop</text>
+    </svg>
+    <div class="btns" style="justify-content:center">
+      <button class="on" id="cyBtn">Next</button>
+      <span class="counter" id="cyTxt">round 1</span>
+    </div>
+  </section>
+
+  <section>
+    <span class="step">Step 1</span>
+    <h2><code>for</code>: do something with each item</h2>
+    <p>A <code>for</code> loop goes through a list one item at a time. Each time round, the variable <code>task</code> holds the next item. The indented lines are the <b>body</b>: what runs each time. Click <b>Next line</b> and watch.</p>
+    <div id="t1"></div>
+    <div class="tip">You pick the name after <code>for</code>. <code>for task in tasks</code> reads like English, so it's a good habit: plural for the list, singular for one item.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 2</span>
+    <h2><code>range</code>: do it N times</h2>
+    <p>Sometimes you don't have a list, you just want "do this 3 times". <code>range(3)</code> gives you the numbers <b>0, 1, 2</b>. It starts at 0 (like list indexes) and stops <b>before</b> 3.</p>
+    <div class="slider"><label><span>repeat <b id="rgN"></b> times</span><code id="rgCode"></code></label><input type="range" id="rgR" min="1" max="6" value="3"></div>
+    <div class="boxes" id="rgBoxes"></div>
+    <pre><code id="rgSrc"></code></pre>
+    <div class="term" id="rgOut"></div>
+    <div class="tip">That's why the code prints <code>i + 1</code>: people count tries from 1, Python counts from 0.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 3</span>
+    <h2><code>while</code>: keep going until...</h2>
+    <p>A <code>while</code> loop repeats <b>as long as</b> its condition is <code>True</code>. It checks before every round. This is the real agent loop: keep working while there are steps left.</p>
+    <p><code>steps += 1</code> is short for <code>steps = steps + 1</code>: "add one to steps".</p>
+    <div id="t2"></div>
+    <div class="note"><b>The big danger:</b> if nothing inside the loop ever makes the condition <code>False</code>, it runs forever. Delete <code>steps += 1</code> and <code>steps</code> stays 0, so <code>0 &lt; 3</code> is always true. That's why real agents always have a <code>max_steps</code>. If your program gets stuck, press <b>Ctrl + C</b> in the terminal to stop it.</div>
+  </section>
+
+  <section>
+    <span class="step">Step 4</span>
+    <h2><code>break</code>: stop early</h2>
+    <p><code>break</code> jumps straight out of the loop, even if there are items left. Here the agent reads its inbox but stops the moment it sees <code>"STOP"</code>.</p>
+    <div id="t3"></div>
+  </section>
+
+  <section>
+    <span class="step">Step 5</span>
+    <h2>Keeping score as you go</h2>
+    <p>A very common pattern: make a variable <b>before</b> the loop, change it <b>inside</b>, use it <b>after</b>. Here the agent counts how many of its tool calls failed.</p>
+    <div id="t4"></div>
+    <p style="margin-top:14px">Same pattern, but building a new list instead of a number:</p>
+<pre><code>log = []                          <span class="c"># before: empty</span>
+<span class="k">for</span> task <span class="k">in</span> tasks:
+    log.append(<span class="s">f"done: {task}"</span>)  <span class="c"># inside: add one</span>
+print(log)                        <span class="c"># after: use it</span></code></pre>
+    <div class="note"><b>Watch the indent:</b> the <code>print</code> is <i>not</i> indented, so it runs once at the end. Indent it and it runs every time round.</div>
+  </section>
+
+  <section>
+    <span class="step">Which one?</span>
+    <h2><code>for</code> or <code>while</code>?</h2>
+    <div class="two">
+      <div><h3><code>for</code></h3><p>You know what you're going through: every item in a list, or N times with <code>range</code>.</p></div>
+      <div><h3><code>while</code></h3><p>You don't know how many rounds: "keep going until the job is done". Always add a limit.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="step">Step 6</span>
+    <h2>Predict the output</h2>
+    <p>Guess first, then click.</p>
+    <div id="quiz"></div>
+  </section>
+
+  <section>
+    <span class="step">Watch out</span>
+    <h2>Common beginner mistakes</h2>
+    <ul class="mistakes">
+      <li><b>Forgetting the colon:</b> <code>for task in tasks:</code> and <code>while x &lt; 3:</code> both end with <code>:</code>.</li>
+      <li><b>Forgetting to indent the body:</b> lines inside the loop need 4 spaces. Python crashes with <code>IndentationError</code> otherwise.</li>
+      <li><b>Indenting too much:</b> a <code>print</code> you want once at the end goes back to the left edge.</li>
+      <li><b>Never-ending <code>while</code>:</b> make sure something inside the loop changes the condition. Ctrl + C gets you out.</li>
+      <li><b>Thinking <code>range(3)</code> includes 3:</b> it gives 0, 1, 2.</li>
+    </ul>
+  </section>
+
+  <p class="next">Next: open <code>lessons/session-05/exercise.py</code> and give your agent its loop.</p>
+</main>
+
+<script>
+const el = id => document.getElementById(id);
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const KW = /\b(for|in|while|if|else|break|print|range|len)\b/g;
+function highlight(line) {
+  // split into strings / comments / the rest, colour each part
+  return line.split(/((?:f?"[^"]*")|(?:#.*$))/).map(part => {
+    if (!part) return '';
+    if (part.startsWith('#')) return `<span class="c">${esc(part)}</span>`;
+    if (/^f?"/.test(part)) return `<span class="s">${esc(part)}</span>`;
+    return esc(part).replace(KW, '<span class="k">$1</span>').replace(/\b(\d+)\b/g, '<span class="n">$1</span>');
+  }).join('');
+}
+
+// A step-by-step code runner. frames: [{ln, vars, out, why}]
+function tracer(rootId, code, frames) {
+  const root = el(rootId);
+  const lines = code.split('\n');
+  root.innerHTML = `
+    <div class="tracer">
+      <div class="codebox">${lines.map((l, i) => `<div class="ln"><span class="num">${i + 1}</span>${highlight(l)}</div>`).join('')}</div>
+      <div class="side">
+        <div class="vars"><div class="h">Variables</div><div class="vlist"></div></div>
+        <div class="why-now"><div class="h">What's happening</div><div class="wtxt"></div></div>
+      </div>
+      <div class="term"></div>
+    </div>
+    <div class="btns">
+      <button class="on nxt">Next line</button>
+      <button class="all">Run to the end</button>
+      <button class="rst">Reset</button>
+      <span class="counter"></span>
+    </div>`;
+  const lnEls = root.querySelectorAll('.ln');
+  let at = -1;
+  function draw() {
+    lnEls.forEach(e => e.classList.remove('cur'));
+    const f = frames[at];
+    const prev = frames[at - 1];
+    if (f && f.ln != null) lnEls[f.ln].classList.add('cur');
+    const vars = f ? f.vars : {};
+    root.querySelector('.vlist').innerHTML = Object.keys(vars).length
+      ? Object.entries(vars).map(([k, v]) => {
+          const changed = prev && prev.vars[k] !== v;
+          return `<div class="v${changed ? ' changed' : ''}">${esc(k)} = ${esc(v)}</div>`;
+        }).join('')
+      : '<div class="v" style="color:var(--muted)">(none yet)</div>';
+    root.querySelector('.wtxt').innerHTML = f ? f.why : 'Click <b>Next line</b> to start.';
+    root.querySelector('.term').textContent = f ? f.out.join('\n') : '';
+    root.querySelector('.counter').textContent = at < 0 ? '' : at === frames.length - 1 ? 'finished' : `step ${at + 1} of ${frames.length}`;
+    root.querySelector('.nxt').disabled = root.querySelector('.all').disabled = at >= frames.length - 1;
+  }
+  root.querySelector('.nxt').onclick = () => { at++; draw(); };
+  root.querySelector('.all').onclick = () => { at = frames.length - 1; draw(); };
+  root.querySelector('.rst').onclick = () => { at = -1; draw(); };
+  draw();
+}
+const T = b => `<span class="chip ${b ? 't' : 'f'}">${b ? 'True' : 'False'}</span>`;
+const Q = s => `"${s}"`;
+const L = a => '[' + a.map(Q).join(', ') + ']';
+
+// ---- cycle diagram ----
+let cy = 0, round = 1;
+const cyLabels = ['Think: what should I do next?', 'Act: use a tool', 'Check: am I done? No, go round again'];
+function drawCycle() {
+  [0, 1, 2].forEach(i => el('cy' + i).classList.toggle('on', i === cy));
+  el('cyTxt').textContent = `round ${round} · ${cyLabels[cy]}`;
+}
+el('cyBtn').onclick = () => {
+  cy = (cy + 1) % 3;
+  if (cy === 0) round = round >= 3 ? 1 : round + 1;
+  drawCycle();
+  if (cy === 2 && round === 3) el('cyTxt').textContent = 'round 3 · Check: done! Leave the loop.';
+};
+drawCycle();
+
+// ---- Tracer 1: for loop ----
+(() => {
+  const tasks = ['search', 'read', 'summarize'];
+  const code = `tasks = ["search", "read", "summarize"]\nfor task in tasks:\n    print(f"Working on: {task}")\nprint("All done!")`;
+  const f = []; const out = [];
+  let vars = { tasks: L(tasks) };
+  f.push({ ln: 0, vars: { ...vars }, out: [...out], why: 'Make the list of tasks.' });
+  tasks.forEach((t, i) => {
+    vars = { ...vars, task: Q(t) };
+    f.push({ ln: 1, vars: { ...vars }, out: [...out], why: `Round ${i + 1}: <code>task</code> becomes the next item, <code>${Q(t)}</code>.` });
+    out.push(`Working on: ${t}`);
+    f.push({ ln: 2, vars: { ...vars }, out: [...out], why: 'Run the indented body: print using the current <code>task</code>.' });
+  });
+  f.push({ ln: 1, vars: { ...vars }, out: [...out], why: 'No items left, so the loop ends. Jump to the first line that is <b>not</b> indented.' });
+  out.push('All done!');
+  f.push({ ln: 3, vars: { ...vars }, out: [...out], why: 'Runs once, after the loop. Not indented = not part of the loop.' });
+  tracer('t1', code, f);
+})();
+
+// ---- range ----
+function drawRange() {
+  const n = +el('rgR').value;
+  el('rgN').textContent = n;
+  el('rgCode').textContent = `range(${n})`;
+  el('rgBoxes').innerHTML = Array.from({ length: n }, (_, i) => `<div class="nb">${i}</div>`).join('');
+  el('rgSrc').innerHTML = highlight(`for i in range(${n}):`) + '\n' + highlight(`    print(f"Try {i + 1}")`);
+  el('rgOut').textContent = Array.from({ length: n }, (_, i) => `Try ${i + 1}`).join('\n');
+}
+el('rgR').addEventListener('input', drawRange);
+drawRange();
+
+// ---- Tracer 2: while ----
+(() => {
+  const code = `steps = 0\nmax_steps = 3\nwhile steps < max_steps:\n    steps += 1\n    print(f"Step {steps}")\nprint("Stopped: hit max_steps")`;
+  const f = []; const out = [];
+  let steps = 0;
+  f.push({ ln: 0, vars: { steps: '0' }, out: [], why: 'Start the counter at 0.' });
+  f.push({ ln: 1, vars: { steps: '0', max_steps: '3' }, out: [], why: 'The safety limit.' });
+  while (true) {
+    const ok = steps < 3;
+    f.push({ ln: 2, vars: { steps: String(steps), max_steps: '3' }, out: [...out],
+      why: `Check: <code>${steps} &lt; 3</code> → ${T(ok)}. ${ok ? 'Go round again.' : 'Stop looping.'}` });
+    if (!ok) break;
+    steps++;
+    f.push({ ln: 3, vars: { steps: String(steps), max_steps: '3' }, out: [...out], why: `Add one: steps goes from ${steps - 1} to ${steps}.` });
+    out.push(`Step ${steps}`);
+    f.push({ ln: 4, vars: { steps: String(steps), max_steps: '3' }, out: [...out], why: 'Print the current step.' });
+  }
+  out.push('Stopped: hit max_steps');
+  f.push({ ln: 5, vars: { steps: '3', max_steps: '3' }, out: [...out], why: 'Loop is over. This runs once.' });
+  tracer('t2', code, f);
+})();
+
+// ---- Tracer 3: break ----
+(() => {
+  const inbox = ['hi', 'weather?', 'STOP', 'hello again'];
+  const code = `inbox = ["hi", "weather?", "STOP", "hello again"]\nfor msg in inbox:\n    if msg == "STOP":\n        break\n    print(f"Reading: {msg}")\nprint("Agent stopped")`;
+  const f = []; const out = [];
+  let vars = { inbox: L(inbox) };
+  f.push({ ln: 0, vars: { ...vars }, out: [], why: 'Four messages. The third one is the stop signal.' });
+  for (const m of inbox) {
+    vars = { ...vars, msg: Q(m) };
+    f.push({ ln: 1, vars: { ...vars }, out: [...out], why: `<code>msg</code> becomes ${esc(Q(m))}.` });
+    const hit = m === 'STOP';
+    f.push({ ln: 2, vars: { ...vars }, out: [...out], why: `Is it "STOP"? ${T(hit)}` });
+    if (hit) {
+      f.push({ ln: 3, vars: { ...vars }, out: [...out], why: '<code>break</code>: leave the loop right now. "hello again" is never read.' });
+      break;
+    }
+    out.push(`Reading: ${m}`);
+    f.push({ ln: 4, vars: { ...vars }, out: [...out], why: 'Not STOP, so read it.' });
+  }
+  out.push('Agent stopped');
+  f.push({ ln: 5, vars: { ...vars }, out: [...out], why: 'After the loop.' });
+  tracer('t3', code, f);
+})();
+
+// ---- Tracer 4: counting ----
+(() => {
+  const results = ['ok', 'error', 'ok', 'error'];
+  const code = `results = ["ok", "error", "ok", "error"]\nerrors = 0\nfor r in results:\n    if r == "error":\n        errors += 1\nprint(f"Errors: {errors}")`;
+  const f = []; const out = [];
+  let vars = { results: L(results) };
+  f.push({ ln: 0, vars: { ...vars }, out: [], why: 'What each tool call returned.' });
+  let errors = 0;
+  vars = { ...vars, errors: '0' };
+  f.push({ ln: 1, vars: { ...vars }, out: [], why: '<b>Before</b> the loop: start counting at 0.' });
+  for (const r of results) {
+    vars = { ...vars, r: Q(r) };
+    f.push({ ln: 2, vars: { ...vars }, out: [], why: `<code>r</code> becomes ${Q(r)}.` });
+    const hit = r === 'error';
+    f.push({ ln: 3, vars: { ...vars }, out: [], why: `Is it "error"? ${T(hit)}` });
+    if (hit) {
+      errors++;
+      vars = { ...vars, errors: String(errors) };
+      f.push({ ln: 4, vars: { ...vars }, out: [], why: `<b>Inside</b>: add one. errors is now ${errors}.` });
+    }
+  }
+  out.push(`Errors: ${errors}`);
+  f.push({ ln: 5, vars: { ...vars }, out: [...out], why: '<b>After</b> the loop: print the final count, once.' });
+  tracer('t4', code, f);
+})();
+
+// ---- Predict ----
+const questions = [
+  { code: 'for x in [1, 2, 3]:\n    print(x * 2)', choices: ['1\n2\n3', '2\n4\n6', '6'], right: 1,
+    why: 'Each round x is the next number, and the body prints it doubled.' },
+  { code: 'for i in range(3):\n    print(i)', choices: ['1\n2\n3', '0\n1\n2', '0\n1\n2\n3'], right: 1,
+    why: 'range(3) starts at 0 and stops before 3.' },
+  { code: 'count = 0\nwhile count < 3:\n    count += 1\nprint(count)', choices: ['2', '3', '4'], right: 1,
+    why: 'It adds 1 until count < 3 is False. That happens when count is 3. The print is not indented, so it runs once.' },
+  { code: 'for w in ["a", "b", "stop", "c"]:\n    if w == "stop":\n        break\n    print(w)', choices: ['a\nb', 'a\nb\nstop', 'a\nb\nc'], right: 0,
+    why: 'break leaves the loop before printing "stop", and "c" is never reached.' },
+  { code: 'total = 0\nfor n in [2, 3, 5]:\n    total += n\nprint(total)', choices: ['5', '10', '2\n5\n10'], right: 1,
+    why: 'total adds up to 2 + 3 + 5 = 10. The print is outside the loop, so it shows only the final total.' },
+];
+const quizEl = el('quiz');
+questions.forEach((qq, qi) => {
+  const wrap = document.createElement('div'); wrap.className = 'q';
+  const pre = document.createElement('pre'); const code = document.createElement('code');
+  code.innerHTML = qq.code.split('\n').map(highlight).join('\n'); pre.appendChild(code);
+  const label = document.createElement('div'); label.textContent = `${qi + 1}. What does this print?`;
+  const choices = document.createElement('div'); choices.className = 'choices';
+  const why = document.createElement('div'); why.className = 'why'; why.textContent = qq.why;
+  qq.choices.forEach((c, ci) => {
+    const b = document.createElement('button'); b.textContent = c;
+    b.onclick = () => {
+      if (wrap.classList.contains('answered')) return;
+      wrap.classList.add('answered');
+      b.classList.add(ci === qq.right ? 'right' : 'wrong');
+      b.textContent = (ci === qq.right ? '✓ ' : '✗ ') + b.textContent;
+      if (ci !== qq.right) {
+        const r = choices.children[qq.right]; r.classList.add('right'); r.textContent = '✓ ' + r.textContent;
+      }
+    };
+    choices.appendChild(b);
+  });
+  wrap.append(label, pre, choices, why);
+  quizEl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
